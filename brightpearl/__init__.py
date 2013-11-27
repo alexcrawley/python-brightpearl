@@ -5,7 +5,7 @@ from urlparse import urljoin
 
 import requests
 
-logging.basicConfig(level=0)
+#logging.basicConfig(level=0)
 USER = 'nicolas@scrapinghub.com'
 PASS = 'somepass'
 ACCOUNTID = 'tvspots'
