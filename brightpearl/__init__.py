@@ -2,6 +2,7 @@ import json
 import logging
 from weakref import WeakValueDictionary
 from urlparse import urljoin
+from time import sleep
 
 import requests
 
@@ -105,19 +106,56 @@ class Resource(object):
     # GET /resource/id?arg1=value1&...
     def get(self, **kwargs):
         url = urljoin(self.api.base_url, self.url).strip('/')
-        return self._readresponse(self.api.session.get(url, params=kwargs))
+        for _ in xrange(3):
+            try:
+                response = self.api.session.get(url, params=kwargs)
+                return self._readresponse(response)
+            except APIError as e:
+                if e.status_code == 503 and e.json().get('response') == \
+                        'You have sent too many requests. Please wait before'\
+                        ' sending another request':
+                    sleep(float(response.headers\
+                            .get('brightpearl-next-throttle-period', 1)))
+                    continue
+                raise
+        else:
+            raise e
 
     # POST /resource
     def post(self, **kwargs):
         url = urljoin(self.api.base_url, self.url).strip('/')
-        return self._readresponse(self.api.session.post(url,
-            data=json.dumps(kwargs)))
+        for _ in xrange(3):
+            try:
+                response = self.api.session.post(url, data=json.dumps(kwargs))
+                return self._readresponse(response)
+            except APIError as e:
+                if e.status_code == 503 and e.json().get('response') == \
+                        'You have sent too many requests. Please wait before'\
+                        ' sending another request':
+                    sleep(float(response.headers\
+                            .get('brightpearl-next-throttle-period', 1)))
+                    continue
+                raise
+        else:
+            raise e
 
     # PUT /resource
     def put(self, **kwargs):
         url = urljoin(self.api.base_url, self.url).strip('/')
-        return self._readresponse(self.api.session.put(url,
-            data=json.dumps(kwargs)))
+        for _ in xrange(3):
+            try:
+                response = self.api.session.put(url, data=json.dumps(kwargs))
+                return self._readresponse(response)
+            except APIError as e:
+                if e.status_code == 503 and e.json().get('response') == \
+                        'You have sent too many requests. Please wait before'\
+                        ' sending another request':
+                    sleep(float(response.headers\
+                            .get('brightpearl-next-throttle-period', 1)))
+                    continue
+                raise
+        else:
+            raise e
 
     def _load_attrs(self, data):
         if isinstance(data, list):
