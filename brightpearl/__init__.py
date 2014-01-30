@@ -6,10 +6,8 @@ from time import sleep
 
 import requests
 
+
 #logging.basicConfig(level=0)
-USER = 'nicolas@scrapinghub.com'
-PASS = 'somepass'
-ACCOUNTID = 'tvspots'
 
 
 class APIError(Exception):
@@ -114,8 +112,9 @@ class Resource(object):
                 if e.status_code == 503 and e.json().get('response') == \
                         'You have sent too many requests. Please wait before'\
                         ' sending another request':
-                    sleep(float(response.headers\
-                            .get('brightpearl-next-throttle-period', 1)))
+                    secs = float(response.headers.get('brightpearl-next-'
+                        'throttle-period', 1000)) / 1000
+                    sleep(secs)
                     continue
                 raise
         else:
@@ -132,8 +131,9 @@ class Resource(object):
                 if e.status_code == 503 and e.json().get('response') == \
                         'You have sent too many requests. Please wait before'\
                         ' sending another request':
-                    sleep(float(response.headers\
-                            .get('brightpearl-next-throttle-period', 1)))
+                    secs = float(response.headers.get('brightpearl-next-'
+                        'throttle-period', 1000)) / 1000
+                    sleep(secs)
                     continue
                 raise
         else:
@@ -150,8 +150,9 @@ class Resource(object):
                 if e.status_code == 503 and e.json().get('response') == \
                         'You have sent too many requests. Please wait before'\
                         ' sending another request':
-                    sleep(float(response.headers\
-                            .get('brightpearl-next-throttle-period', 1)))
+                    secs = float(response.headers.get('brightpearl-next-'
+                        'throttle-period', 1000)) / 1000
+                    sleep(secs)
                     continue
                 raise
         else:
