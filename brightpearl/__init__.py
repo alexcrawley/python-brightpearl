@@ -22,10 +22,11 @@ class APIError(Exception):
 
 class API(object):
 
-    def __init__(self, account_id=None, token=None,
-            datacentre='use', version='2.0.0'):
+    def __init__(self, account_id=None, app_ref=None, account_token=None,
+                 datacentre='eu1', version='2.0.0'):
         assert account_id, 'account_id is a required kwarg.'
-        self.token = token
+        self.app_ref = app_ref
+        self.account_token = account_token
         self.params = {
                 'account_id': account_id,
                 'datacentre': datacentre,
@@ -34,20 +35,11 @@ class API(object):
         self.base_url = 'https://ws-{datacentre}.brightpearl.com/'\
                 '{version}/{account_id}/'.format(**self.params)
         self.session = requests.Session()
-        if self.token:
-            self.session.headers = {'brightpearl-auth': self.token,
-                    'Content-Type':' application/json; charset=utf-8'}
-
-    def authenticate(self, user, passwd):
-        url = 'https://ws-{datacentre}.brightpearl.com/{account_id}/authorise'\
-                .format(**self.params)
-        body = {'apiAccountCredentials': {
-            'emailAddress': user,
-            'password': passwd}}
-        response = requests.post(url, data=json.dumps(body))
-        self.token = response.json()['response']
-        self.session.headers.update({'brightpearl-auth': self.token})
-        return self.token
+        self.session.headers = {
+            'brightpearl-app-ref': self.app_ref,
+            'brightpearl-account-token': self.account_token,
+            'Content-Type': 'application/json; charset=utf-8'
+            }
 
     def __getattr__(self, name):
         key = '{}-service/'.format(name)
