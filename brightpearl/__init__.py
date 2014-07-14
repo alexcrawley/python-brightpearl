@@ -150,6 +150,25 @@ class Resource(object):
         else:
             raise e
 
+    # OPTIONS /resource
+    def options(self, **kwargs):
+        url = urljoin(self.api.base_url, self.url).strip('/')
+        for _ in xrange(3):
+            try:
+                response = self.api.session.options(url, data=json.dumps(kwargs))
+                return self._readresponse(response)
+            except APIError as e:
+                if e.status_code == 503 and e.json().get('response') == \
+                        'You have sent too many requests. Please wait before'\
+                        ' sending another request':
+                    secs = float(response.headers.get('brightpearl-next-'
+                        'throttle-period', 1000)) / 1000
+                    sleep(secs)
+                    continue
+                raise
+        else:
+            raise e
+
     def _load_attrs(self, data):
         if isinstance(data, list):
             logging.debug('List response')
